@@ -6,8 +6,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const mongoose = require('mongoose');
 
+// Debug: Log environment variables
+console.log('🔍 Environment variables:');
+console.log('PORT:', process.env.PORT);
+console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
+
 // MongoDB connection - use environment variable or local
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/declutter-app';
+console.log('🔗 Using MongoDB URI:', MONGODB_URI);
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
