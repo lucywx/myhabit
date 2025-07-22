@@ -39,6 +39,7 @@ app.use('/api', require('./routes/checkMissed'));
 app.use('/api/progress', progressRoutes);
 app.use('/api', require('./routes/uploadAvatar'));
 app.use('/api/user', require('./routes/userProfile'));
+app.use('/api/user', require('./routes/punishmentSettings'));
 app.use('/api/bank-info', require('./routes/bankInfo'));
 app.use('/api/mock-payment', require('./routes/mockPayment'));
 
