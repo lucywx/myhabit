@@ -1,3 +1,6 @@
+// 加载环境变量
+require('dotenv').config();
+
 console.log("Starting server...");
 
 const express = require('express');
@@ -12,7 +15,7 @@ console.log('PORT:', process.env.PORT);
 console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
 
 // MongoDB connection - use environment variable or local
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/declutter-app';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/myhabit-app';
 console.log('🔗 Using MongoDB URI:', MONGODB_URI);
 
 mongoose.connect(MONGODB_URI, {
@@ -33,7 +36,7 @@ app.use('/uploads', express.static('uploads'));
 
 // 使用路由
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api', goalRoutes);
+app.use('/api/goals', goalRoutes);
 app.use('/api', require('./routes/upload'));
 app.use('/api', require('./routes/checkMissed'));
 app.use('/api/progress', progressRoutes);
@@ -42,6 +45,9 @@ app.use('/api/user', require('./routes/userProfile'));
 app.use('/api/user', require('./routes/punishmentSettings'));
 app.use('/api/bank-info', require('./routes/bankInfo'));
 app.use('/api/mock-payment', require('./routes/mockPayment'));
+app.use('/api/payment', require('./routes/payment'));
+app.use('/api/invite', require('./routes/invite'));
+app.use('/api/invite', require('./routes/invite-mock'));
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

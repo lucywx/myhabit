@@ -36,7 +36,7 @@ REACT_APP_API_BASE=https://your-railway-app.railway.app
 3. **设置环境变量**
 在 Railway 控制台中设置：
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/declutter-app
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/myhabit-app
 ```
 
 #### 3. 数据库设置

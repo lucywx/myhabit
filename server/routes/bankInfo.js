@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const authMiddleware = require('../middleware/authMiddleware');
 const User = require('../models/User');
 
 // Get bank information
-router.get('/', auth, async (req, res) => {
+router.get('/get-bank-info', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.userId).select('-password');
     
     if (!user) {
       return res.status(404).json({ error: 'User does not exist' });
@@ -19,8 +19,6 @@ router.get('/', auth, async (req, res) => {
       cardType: user.cardType || '',
       expiryDate: user.expiryDate || '',
       cvv: user.cvv || '',
-      idNumber: user.idNumber || '',
-      phoneNumber: user.phoneNumber || '',
       branchName: user.branchName || ''
     };
 
@@ -32,7 +30,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Create or update bank information
-router.post('/', auth, async (req, res) => {
+router.post('/set-bank-info', authMiddleware, async (req, res) => {
   try {
     const {
       bankName,
@@ -41,13 +39,22 @@ router.post('/', auth, async (req, res) => {
       cardType,
       expiryDate,
       cvv,
-      idNumber,
-      phoneNumber,
       branchName
     } = req.body;
 
+    // 调试：显示接收到的数据
+    console.log('接收到的银行信息:', req.body);
+    
     // 验证必填字段
-    if (!bankName || !accountName || !accountNumber || !cardType || !expiryDate || !cvv || !idNumber || !phoneNumber) {
+    if (!bankName || !accountName || !accountNumber || !cardType || !expiryDate || !cvv) {
+      console.log('验证失败的字段:', {
+        bankName: !!bankName,
+        accountName: !!accountName,
+        accountNumber: !!accountNumber,
+        cardType: !!cardType,
+        expiryDate: !!expiryDate,
+        cvv: !!cvv
+      });
       return res.status(400).json({ error: '请填写所有必填字段' });
     }
 
@@ -66,16 +73,6 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ error: 'CVV格式不正确' });
     }
 
-    // 验证身份证号格式
-    if (!/^\d{17}[\dXx]$/.test(idNumber)) {
-      return res.status(400).json({ error: '身份证号格式不正确' });
-    }
-
-    // 验证手机号格式
-    if (!/^1[3-9]\d{9}$/.test(phoneNumber)) {
-      return res.status(400).json({ error: '手机号格式不正确' });
-    }
-
     const updateData = {
       bankName,
       accountName,
@@ -83,13 +80,11 @@ router.post('/', auth, async (req, res) => {
       cardType,
       expiryDate,
       cvv,
-      idNumber,
-      phoneNumber,
       branchName: branchName || ''
     };
 
     const user = await User.findByIdAndUpdate(
-      req.user.id,
+      req.user.userId,
       updateData,
       { new: true, runValidators: true }
     );
@@ -107,8 +102,6 @@ router.post('/', auth, async (req, res) => {
         cardType: user.cardType,
         expiryDate: user.expiryDate,
         cvv: user.cvv,
-        idNumber: user.idNumber,
-        phoneNumber: user.phoneNumber,
         branchName: user.branchName
       }
     });
@@ -119,7 +112,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // 更新银行信息
-router.put('/', auth, async (req, res) => {
+router.put('/', authMiddleware, async (req, res) => {
   try {
     const {
       bankName,
@@ -128,13 +121,11 @@ router.put('/', auth, async (req, res) => {
       cardType,
       expiryDate,
       cvv,
-      idNumber,
-      phoneNumber,
       branchName
     } = req.body;
 
     // 验证必填字段
-    if (!bankName || !accountName || !accountNumber || !cardType || !expiryDate || !cvv || !idNumber || !phoneNumber) {
+    if (!bankName || !accountName || !accountNumber || !cardType || !expiryDate || !cvv) {
       return res.status(400).json({ error: '请填写所有必填字段' });
     }
 
@@ -153,16 +144,6 @@ router.put('/', auth, async (req, res) => {
       return res.status(400).json({ error: 'CVV格式不正确' });
     }
 
-    // 验证身份证号格式
-    if (!/^\d{17}[\dXx]$/.test(idNumber)) {
-      return res.status(400).json({ error: '身份证号格式不正确' });
-    }
-
-    // 验证手机号格式
-    if (!/^1[3-9]\d{9}$/.test(phoneNumber)) {
-      return res.status(400).json({ error: '手机号格式不正确' });
-    }
-
     const updateData = {
       bankName,
       accountName,
@@ -170,13 +151,11 @@ router.put('/', auth, async (req, res) => {
       cardType,
       expiryDate,
       cvv,
-      idNumber,
-      phoneNumber,
       branchName: branchName || ''
     };
 
     const user = await User.findByIdAndUpdate(
-      req.user.id,
+      req.user.userId,
       updateData,
       { new: true, runValidators: true }
     );
@@ -194,8 +173,6 @@ router.put('/', auth, async (req, res) => {
         cardType: user.cardType,
         expiryDate: user.expiryDate,
         cvv: user.cvv,
-        idNumber: user.idNumber,
-        phoneNumber: user.phoneNumber,
         branchName: user.branchName
       }
     });
@@ -206,10 +183,10 @@ router.put('/', auth, async (req, res) => {
 });
 
 // 删除银行信息
-router.delete('/', auth, async (req, res) => {
+router.delete('/', authMiddleware, async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
-      req.user.id,
+      req.user.userId,
       {
         bankName: '',
         accountName: '',
@@ -217,8 +194,6 @@ router.delete('/', auth, async (req, res) => {
         cardType: '',
         expiryDate: '',
         cvv: '',
-        idNumber: '',
-        phoneNumber: '',
         branchName: ''
       },
       { new: true }

@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const authMiddleware = require('../middleware/authMiddleware');
+const Checkin = require('../models/Checkin');
 
 const router = express.Router();
 const uploadDir = path.join(__dirname, '..', 'uploads');
@@ -15,10 +16,11 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const userId = req.user.userId;
-    const day = req.body.day;
+    // 从文件名中提取day信息，因为multer在解析body之前执行
     const timestamp = Date.now();
     const ext = path.extname(file.originalname);
-    cb(null, `day-${day}-${userId}-${timestamp}${ext}`);
+    // 先使用临时文件名，稍后在路由中重命名
+    cb(null, `temp-${userId}-${timestamp}${ext}`);
   }
 });
 
@@ -37,47 +39,92 @@ const upload = multer({
 });
 
 // Get day images for 7-day challenge
-router.get('/day-images', authMiddleware, (req, res) => {
-  const userId = req.user.userId;
-  const images = {};
-  
-  // Check for existing images for each day (1-7)
-  for (let day = 1; day <= 7; day++) {
-    const pattern = new RegExp(`^day-${day}-${userId}-\\d+\\.(jpg|jpeg|png|gif)$`);
-    const files = fs.readdirSync(uploadDir);
-    const dayFile = files.find(f => pattern.test(f));
+router.get('/get-checkin-image', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const checkin = await Checkin.findByUserId(userId);
     
-    if (dayFile) {
-      images[day] = `http://localhost:5000/uploads/${dayFile}`;
+    const images = {};
+    
+    if (checkin) {
+      // 从Checkin模型中获取打卡记录
+      for (let day = 1; day <= 7; day++) {
+        const dayCheckin = checkin.checkins.find(c => c.day === day);
+        if (dayCheckin) {
+          images[day] = dayCheckin.imageUrl;
+        } else {
+          images[day] = null;
+        }
+      }
     } else {
-      images[day] = null;
+      // 如果没有Checkin记录，返回空的图片数组
+      for (let day = 1; day <= 7; day++) {
+        images[day] = null;
+      }
     }
+    
+    res.json({ images });
+  } catch (error) {
+    console.error('Error getting checkin images:', error);
+    res.status(500).json({ message: 'Failed to get checkin images' });
   }
-  
-  res.json({ images });
 });
 
-// Upload image for specific day
-router.post('/upload-day-image', authMiddleware, upload.single('image'), (req, res) => {
+// Upload or update image for specific day
+router.post('/upload-checkin-image', authMiddleware, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No image file selected' });
     }
     
-    const day = req.body.day;
+    const day = parseInt(req.body.day || req.query.day);
     if (!day || day < 1 || day > 7) {
       return res.status(400).json({ message: 'Invalid day number' });
     }
     
     const userId = req.user.userId;
-    const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
     
-    // Save day image info to a JSON file for tracking
+    // 获取或创建用户的打卡记录
+    let checkin = await Checkin.findOrCreateByUserId(userId);
+    
+    // 检查是否可以打卡
+    if (!checkin.canCheckinDay(day)) {
+      return res.status(400).json({ message: '不能提前打卡噢' });
+    }
+    
+    // 判断是upload还是update操作
+    const existingCheckin = checkin.checkins.find(c => c.day === day);
+    const isUpdate = existingCheckin !== undefined;
+    
+    console.log(`处理第${day}天图片: ${isUpdate ? 'UPDATE' : 'UPLOAD'} 操作`);
+    
+    // 重命名文件为正确的格式
+    const oldPath = req.file.path;
+    const ext = path.extname(req.file.filename);
+    const newFilename = `day-${day}-${userId}-${Date.now()}${ext}`;
+    const newPath = path.join(uploadDir, newFilename);
+    
+    // 重命名文件
+    fs.renameSync(oldPath, newPath);
+    
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${newFilename}`;
+    
+    // 如果是第一次打卡（第1天），设置startDate
+    if (day === 1 && !checkin.startDate) {
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0); // 设置为当天的00:00:00
+      checkin.startDate = todayDate;
+    }
+    
+    // 添加或更新打卡记录到Checkin模型
+    await checkin.addCheckin(day, imageUrl, newFilename);
+    
+    // Save day image info to a JSON file for tracking (保持兼容性)
     const dayImageInfo = {
       userId,
-      day: parseInt(day),
+      day: day,
       imageUrl,
-      filename: req.file.filename,
+      filename: newFilename,
       uploadedAt: new Date().toISOString()
     };
     
@@ -85,15 +132,25 @@ router.post('/upload-day-image', authMiddleware, upload.single('image'), (req, r
     const infoPath = path.join(uploadDir, infoFilename);
     fs.writeFileSync(infoPath, JSON.stringify(dayImageInfo, null, 2));
     
+    // 根据操作类型返回不同的消息
+    const message = isUpdate ? 'Image updated successfully' : 'Image uploaded successfully';
+    
     res.json({ 
-      message: 'Image uploaded successfully',
+      message,
       imageUrl,
-      day: parseInt(day)
+      day: day,
+      operation: isUpdate ? 'update' : 'upload'
     });
     
   } catch (error) {
-    console.error('Failed to upload image:', error);
-    res.status(500).json({ message: 'Upload failed, please try again' });
+    console.error('Failed to process image:', error);
+    
+    // 根据操作类型返回不同的错误消息
+    const existingCheckin = checkin?.checkins?.find(c => c.day === parseInt(req.body.day || req.query.day));
+    const isUpdate = existingCheckin !== undefined;
+    const errorMessage = isUpdate ? 'Update failed, please try again' : 'Upload failed, please try again';
+    
+    res.status(500).json({ message: errorMessage });
   }
 });
 

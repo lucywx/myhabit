@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   },
   cardType: {
     type: String,
-    enum: ['', 'debit', 'credit'],
+    enum: ['', 'debit', 'credit', 'Visa', 'MasterCard', 'American Express', 'UnionPay'],
     default: ''
   },
   expiryDate: {
@@ -52,6 +52,10 @@ const userSchema = new mongoose.Schema({
   branchName: {
     type: String,
     default: ''
+  },
+  avatar: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true // 添加 createdAt 和 updatedAt 字段

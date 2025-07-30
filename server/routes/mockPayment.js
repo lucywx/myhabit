@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const authMiddleware = require('../middleware/authMiddleware');
 const User = require('../models/User');
 
 // 模拟转账记录存储（实际项目中应该使用数据库）
@@ -9,7 +9,7 @@ const mockTransferLogs = [];
 const mockReceivedLogs = [];
 
 // 模拟转账
-router.post('/transfer', auth, async (req, res) => {
+router.post('/transfer', authMiddleware, async (req, res) => {
   try {
     const { amount, type, receiver, remark } = req.body;
     const userId = req.user.id;
@@ -102,7 +102,7 @@ router.post('/transfer', auth, async (req, res) => {
 });
 
 // 获取模拟转账记录
-router.get('/transfers', auth, async (req, res) => {
+router.get('/transfers', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
     
@@ -122,7 +122,7 @@ router.get('/transfers', auth, async (req, res) => {
 });
 
 // 获取收到账款记录
-router.get('/received', auth, async (req, res) => {
+router.get('/received', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
     
@@ -141,7 +141,7 @@ router.get('/received', auth, async (req, res) => {
 });
 
 // 清空模拟转账记录（仅用于测试）
-router.delete('/transfers', auth, async (req, res) => {
+router.delete('/transfers', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
     
@@ -166,7 +166,7 @@ router.delete('/transfers', auth, async (req, res) => {
 });
 
 // 模拟转账统计
-router.get('/stats', auth, async (req, res) => {
+router.get('/stats', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
     

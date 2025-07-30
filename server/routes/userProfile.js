@@ -51,7 +51,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
           checkDate.setDate(startDate.getDate() + i);
           const dateStr = checkDate.toISOString().split('T')[0];
           
-          if (checkinsByDate[dateStr] && checkinsByDate[dateStr] >= currentGoal.itemsPerDay) {
+          if (checkinsByDate[dateStr] && checkinsByDate[dateStr] >= currentGoal.dailyTarget) {
             completedDays++;
           }
         }
@@ -77,10 +77,10 @@ router.get('/profile', authMiddleware, async (req, res) => {
         completedGoals,
         totalItemsCleaned,
         currentGoal: currentGoal ? {
-          itemsPerDay: currentGoal.itemsPerDay,
+          dailyTarget: currentGoal.dailyTarget,
           days: currentGoal.days,
           startDate: currentGoal.startDate,
-          daysCompleted: allCheckins.length > 0 ? Math.floor(allCheckins.length / currentGoal.itemsPerDay) : 0
+          daysCompleted: allCheckins.length > 0 ? Math.floor(allCheckins.length / currentGoal.dailyTarget) : 0
         } : null
       }
     };

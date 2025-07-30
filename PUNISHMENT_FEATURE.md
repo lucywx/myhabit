@@ -22,7 +22,7 @@
 
 ### 设置惩罚机制
 1. 进入"我的目标"页面
-2. 填写基本目标信息（每天清理物品数量、持续天数）
+2. 填写基本目标信息（每日目标数量、持续天数）
 3. 在"惩罚设置"部分：
    - 设置惩罚金额
    - 选择惩罚类型
@@ -52,7 +52,7 @@
   userId: ObjectId,
   startDate: String,
   days: Number,
-  itemsPerDay: Number,
+  dailyTarget: Number,
   punishment: {
     amount: Number,        // 惩罚金额
     type: String,          // 'platform' 或 'friend'

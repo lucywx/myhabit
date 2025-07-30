@@ -20,7 +20,17 @@ router.post('/register', async (req, res) => {
         password: hashedPassword,
         email: email || ''
       });
-      res.json({ message: 'Registration successful' });
+      
+      // 返回用户信息（不包含密码）
+      res.json({ 
+        message: 'Registration successful',
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar || null
+        }
+      });
     } catch (err) {
       res.status(400).json({ error: 'User already exists or invalid data' });
     }
@@ -36,7 +46,18 @@ router.post('/register', async (req, res) => {
     if (!isMatch) return res.status(401).json({ error: 'Wrong password' });
   
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ message: 'Login successful', token });
+    
+    // 返回用户信息（不包含密码）
+    res.json({ 
+      message: 'Login successful', 
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar || null
+      }
+    });
   });  
 
 // 搜索用户接口
