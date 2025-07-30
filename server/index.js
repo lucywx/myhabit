@@ -22,8 +22,8 @@ mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('✅ MongoDB connected'))
-.catch((err) => console.error('❌ MongoDB connection error:', err));
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 const progressRoutes = require('./routes/progress');
 const goalRoutes = require('./routes/setGoal');
@@ -35,7 +35,6 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 // 使用路由
-app.use('/api/auth', require('./routes/auth'));
 app.use('/api/goals', goalRoutes);
 app.use('/api', require('./routes/upload'));
 app.use('/api', require('./routes/checkMissed'));
@@ -48,6 +47,7 @@ app.use('/api/mock-payment', require('./routes/mockPayment'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/invite', require('./routes/invite'));
 app.use('/api/invite', require('./routes/invite-mock'));
+app.use('/api/auth', require('./routes/auth'));
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

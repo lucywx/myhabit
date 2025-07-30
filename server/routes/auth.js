@@ -84,6 +84,30 @@ router.get('/users/search', authMiddleware, async (req, res) => {
   }
 });
 
+// 验证token接口
+router.get('/verify', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User does not exist' });
+    }
+    
+    res.json({ 
+      message: 'Token valid',
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar || null
+      }
+    });
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(500).json({ message: 'Token verification failed' });
+  }
+});
+
 // 获取用户档案接口
 router.get('/user/profile', authMiddleware, async (req, res) => {
   try {
