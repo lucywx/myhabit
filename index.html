@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyHabit App - 习惯养成应用</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        p {
+            color: #666;
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .feature h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .feature p {
+            color: #666;
+            font-size: 0.9em;
+            margin: 0;
+        }
+        .status {
+            background: #e8f5e8;
+            color: #2d5a2d;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #c3e6c3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 MyHabit App</h1>
+        <p>智能习惯养成应用，帮助您建立健康的生活方式</p>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>📊 目标追踪</h3>
+                <p>设定个人目标，实时追踪进度</p>
+            </div>
+            <div class="feature">
+                <h3>💰 激励机制</h3>
+                <p>通过奖励和惩罚机制保持动力</p>
+            </div>
+            <div class="feature">
+                <h3>👥 社交监督</h3>
+                <p>邀请朋友监督，共同进步</p>
+            </div>
+        </div>
+        
+        <div class="status">
+            <strong>开发状态:</strong> 正在开发中，即将上线
+        </div>
+    </div>
+</body>
+</html> 
