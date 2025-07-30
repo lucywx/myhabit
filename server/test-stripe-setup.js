@@ -1,3 +1,6 @@
+// 加载环境变量
+require('dotenv').config();
+
 const mongoose = require('mongoose');
 const User = require('./models/User');
 
