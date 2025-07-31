@@ -10,7 +10,7 @@ const Payment = require('../models/Payment');
 router.post('/create-payment-intent', authMiddleware, async (req, res) => {
   try {
     const { amount, day, recipientContact, type } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     // 验证用户是否存在
     const user = await User.findById(userId);
@@ -64,7 +64,7 @@ router.post('/create-payment-intent', authMiddleware, async (req, res) => {
 router.post('/confirm-payment', authMiddleware, async (req, res) => {
   try {
     const { paymentIntentId, day, recipientContact, type, amount } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     // 验证支付意图
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -121,7 +121,7 @@ router.post('/confirm-payment', authMiddleware, async (req, res) => {
 // 获取支付历史
 router.get('/get-payment-history', authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const payments = await Payment.findByUserId(userId);
 

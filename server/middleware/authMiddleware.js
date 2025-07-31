@@ -1,6 +1,7 @@
 // server/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const SECRET_KEY = 'your-secret'; // 与 auth.js 保持一致
+require('dotenv').config();
+const SECRET_KEY = process.env.JWT_SECRET || 'your-secret'; // 使用环境变量
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;

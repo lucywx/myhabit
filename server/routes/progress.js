@@ -5,6 +5,8 @@ const path = require('path');
 const multer = require('multer');
 const authMiddleware = require('../middleware/authMiddleware');
 const Checkin = require('../models/Checkin');
+const Goal = require('../models/Goal');
+const PriceSettings = require('../models/PriceSettings');
 
 const router = express.Router();
 const uploadDir = path.join(__dirname, '..', 'uploads');
@@ -239,6 +241,102 @@ router.post('/reupload/:day', authMiddleware, upload.single('image'), async (req
   } catch (error) {
     console.error('Failed to reupload image:', error);
     res.status(500).json({ message: 'Reupload failed, please try again' });
+  }
+});
+
+// Get user goals with progress
+router.get('/user-goals', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // 获取用户的目标
+    const goals = await Goal.find({ userId });
+    
+    // 获取用户的打卡记录
+    const checkin = await Checkin.findByUserId(userId);
+    
+    // 获取价格设置
+    const priceSettings = await PriceSettings.findOne({ userId });
+    
+    // 计算每个目标的进度
+    const goalsWithProgress = goals.map(goal => {
+      let currentStreak = 0;
+      let totalAmount = 0;
+      let dailyAmount = 0;
+      
+      if (checkin && checkin.checkins) {
+        // 计算连续打卡天数
+        currentStreak = checkin.checkins.length;
+        
+        // 计算总金额和每日金额
+        if (priceSettings) {
+          totalAmount = priceSettings.amount;
+          dailyAmount = Math.round(totalAmount / 7);
+        }
+      }
+      
+      return {
+        _id: goal._id,
+        title: goal.goalContent,
+        description: `每日目标：${goal.goalContent}`,
+        startDate: checkin?.startDate || new Date(),
+        targetDays: 7,
+        currentStreak,
+        totalAmount,
+        dailyAmount,
+        penaltyAmount: priceSettings?.amount || 10
+      };
+    });
+    
+    res.json({ goals: goalsWithProgress });
+  } catch (error) {
+    console.error('Error getting user goals:', error);
+    res.status(500).json({ message: 'Failed to get user goals' });
+  }
+});
+
+// Handle checkin for specific goal
+router.post('/checkin', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { goalId, date } = req.body;
+    
+    // 验证目标是否存在
+    const goal = await Goal.findById(goalId);
+    if (!goal || goal.userId.toString() !== userId) {
+      return res.status(404).json({ message: 'Goal not found' });
+    }
+    
+    // 获取或创建打卡记录
+    let checkin = await Checkin.findOrCreateByUserId(userId);
+    
+    // 计算今天是第几天（基于开始日期）
+    const today = new Date();
+    const startDate = checkin.startDate ? new Date(checkin.startDate) : today;
+    const dayDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+    const currentDay = dayDiff + 1;
+    
+    if (currentDay < 1 || currentDay > 7) {
+      return res.status(400).json({ message: 'Invalid checkin day' });
+    }
+    
+    // 检查是否已经打卡
+    const existingCheckin = checkin.checkins.find(c => c.day === currentDay);
+    if (existingCheckin) {
+      return res.status(400).json({ message: 'Already checked in for today' });
+    }
+    
+    // 添加打卡记录（这里只是记录，不包含图片）
+    await checkin.addCheckin(currentDay, null, null);
+    
+    res.json({ 
+      message: 'Checkin successful',
+      day: currentDay,
+      currentStreak: checkin.checkins.length
+    });
+  } catch (error) {
+    console.error('Error during checkin:', error);
+    res.status(500).json({ message: 'Checkin failed' });
   }
 });
 

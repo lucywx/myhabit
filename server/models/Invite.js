@@ -13,7 +13,7 @@ const inviteSchema = new mongoose.Schema({
   },
   toEmail: {
     type: String,
-    required: true
+    required: false
   },
   status: {
     type: String,
@@ -55,27 +55,27 @@ inviteSchema.index({ status: 1 });
 inviteSchema.index({ expiresAt: 1 });
 
 // 静态方法
-inviteSchema.statics.findByInviteId = function(inviteId) {
+inviteSchema.statics.findByInviteId = function (inviteId) {
   return this.findOne({ inviteId, status: 'sent', expiresAt: { $gt: new Date() } });
 };
 
-inviteSchema.statics.findByFromUserId = function(fromUserId) {
+inviteSchema.statics.findByFromUserId = function (fromUserId) {
   return this.find({ fromUserId }).sort({ createdAt: -1 });
 };
 
-inviteSchema.statics.findByToEmail = function(toEmail) {
+inviteSchema.statics.findByToEmail = function (toEmail) {
   return this.find({ toEmail }).sort({ createdAt: -1 });
 };
 
 // 实例方法
-inviteSchema.methods.markAsRegistered = function(userId) {
+inviteSchema.methods.markAsRegistered = function (userId) {
   this.status = 'registered';
   this.registeredUserId = userId;
   this.registeredAt = new Date();
   return this.save();
 };
 
-inviteSchema.methods.markAsExpired = function() {
+inviteSchema.methods.markAsExpired = function () {
   this.status = 'expired';
   return this.save();
 };
