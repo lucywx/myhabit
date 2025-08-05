@@ -93,7 +93,7 @@ app.use('/api/checkin', require('./routes/checkin'));
 app.use('/api/bank-info', require('./routes/bankInfo'));
 app.use('/api/mock-payment', require('./routes/mockPayment'));
 app.use('/api/payment', require('./routes/payment'));
-app.use('/api/subscription', require('./routes/subscription'));
+
 app.use('/api/deposit', require('./routes/deposit'));
 app.use('/api/refund', require('./routes/refund'));
 app.use('/api/invite', require('./routes/invite'));

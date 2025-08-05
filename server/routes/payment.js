@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+// 条件性地初始化Stripe
+let stripe = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+}
 const authMiddleware = require('../middleware/authMiddleware');
 const User = require('../models/User');
 const Checkin = require('../models/Checkin');
@@ -35,6 +39,11 @@ router.post('/create-payment-intent', authMiddleware, async (req, res) => {
       }
     };
 
+    // 检查Stripe是否已初始化
+    if (!stripe) {
+      return res.status(500).json({ error: '支付服务未配置' });
+    }
+
     // 创建Stripe支付意图
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Stripe使用分为单位
@@ -65,6 +74,11 @@ router.post('/confirm-payment', authMiddleware, async (req, res) => {
   try {
     const { paymentIntentId, day, recipientContact, type, amount } = req.body;
     const userId = req.user.userId;
+
+    // 检查Stripe是否已初始化
+    if (!stripe) {
+      return res.status(500).json({ error: '支付服务未配置' });
+    }
 
     // 验证支付意图
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
