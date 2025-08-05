@@ -65,7 +65,7 @@ router.post('/generate-invite-mock', authMiddleware, async (req, res) => {
 
     // 生成邀请ID
     const inviteId = crypto.randomBytes(8).toString('hex');
-    
+
     // 设置过期时间（7天）
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
