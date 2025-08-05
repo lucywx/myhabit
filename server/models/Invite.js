@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const inviteSchema = new mongoose.Schema({
   inviteId: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   fromUserId: {
     type: mongoose.Schema.Types.ObjectId,
