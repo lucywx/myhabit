@@ -67,7 +67,7 @@ mongoose.connect(MONGODB_URI, {
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 const goalRoutes = require('./routes/setGoal');
-const priceRoutes = require('./routes/price');
+const priceRoutes = require('./routes/priceSettings');
 
 app.use(cors());
 app.use(express.json());
