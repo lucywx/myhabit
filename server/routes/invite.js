@@ -19,7 +19,7 @@ router.post('/generate', authMiddleware, async (req, res) => {
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     // 生成邀请链接
-    const baseUrl = process.env.FRONTEND_URL || 'https://myhabit.up.railway.app';
+    const baseUrl = process.env.FRONTEND_URL || 'https://myhabit-production.up.railway.app';
     const inviteUrl = `${baseUrl}/register?invite=${inviteId}`;
 
     // 创建邀请记录（不包含邮箱）
@@ -142,7 +142,7 @@ router.post('/generate-invite', authMiddleware, async (req, res) => {
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     // 生成邀请链接
-    const baseUrl = process.env.FRONTEND_URL || 'https://myhabit.up.railway.app';
+    const baseUrl = process.env.FRONTEND_URL || 'https://myhabit-production.up.railway.app';
     const inviteUrl = `${baseUrl}/register?invite=${inviteId}`;
 
     // 创建邀请记录
