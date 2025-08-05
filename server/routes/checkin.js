@@ -1,4 +1,4 @@
-// server/routes/progress.js
+// server/routes/checkin.js
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -295,41 +295,93 @@ router.get('/user-goals', authMiddleware, async (req, res) => {
   }
 });
 
+// Start checkin process
+router.post('/start-checkin', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // 获取或创建用户的打卡记录
+    let checkin = await Checkin.findOrCreateByUserId(userId);
+    
+    res.json({
+      message: 'Checkin started successfully',
+      startDate: checkin.startDate
+    });
+  } catch (error) {
+    console.error('Error starting checkin:', error);
+    res.status(500).json({ message: 'Failed to start checkin' });
+  }
+});
+
+// Get checkin data
+router.get('/get-checkin', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const checkin = await Checkin.findByUserId(userId);
+
+    if (!checkin) {
+      return res.json({
+        checkins: {},
+        startDate: null
+      });
+    }
+
+    // 转换打卡记录格式为前端期望的格式
+    const checkins = {};
+    checkin.checkins.forEach(dayCheckin => {
+      const dayIndex = dayCheckin.day - 1; // 转换为0-6的索引
+      checkins[dayIndex] = {
+        imageUrl: dayCheckin.imageUrl,
+        timestamp: dayCheckin.uploadedAt,
+        dailyAmount: Math.round(70 / 7) // 默认每日金额
+      };
+    });
+
+    res.json({
+      checkins,
+      startDate: checkin.startDate
+    });
+  } catch (error) {
+    console.error('Error getting checkin data:', error);
+    res.status(500).json({ message: 'Failed to get checkin data' });
+  }
+});
+
 // Handle checkin for specific goal
 router.post('/checkin', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
     const { goalId, date } = req.body;
-    
+
     // 验证目标是否存在
     const goal = await Goal.findById(goalId);
     if (!goal || goal.userId.toString() !== userId) {
       return res.status(404).json({ message: 'Goal not found' });
     }
-    
+
     // 获取或创建打卡记录
     let checkin = await Checkin.findOrCreateByUserId(userId);
-    
+
     // 计算今天是第几天（基于开始日期）
     const today = new Date();
     const startDate = checkin.startDate ? new Date(checkin.startDate) : today;
     const dayDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
     const currentDay = dayDiff + 1;
-    
+
     if (currentDay < 1 || currentDay > 7) {
       return res.status(400).json({ message: 'Invalid checkin day' });
     }
-    
+
     // 检查是否已经打卡
     const existingCheckin = checkin.checkins.find(c => c.day === currentDay);
     if (existingCheckin) {
       return res.status(400).json({ message: 'Already checked in for today' });
     }
-    
+
     // 添加打卡记录（这里只是记录，不包含图片）
     await checkin.addCheckin(currentDay, null, null);
-    
-    res.json({ 
+
+    res.json({
       message: 'Checkin successful',
       day: currentDay,
       currentStreak: checkin.checkins.length

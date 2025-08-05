@@ -79,6 +79,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/goals', goalRoutes);
 app.use('/api/price', priceRoutes);
 app.use('/api/user-progress', require('./routes/userProgress'));
+app.use('/api/checkin', require('./routes/checkin'));
 app.use('/api/bank-info', require('./routes/bankInfo'));
 app.use('/api/mock-payment', require('./routes/mockPayment'));
 app.use('/api/payment', require('./routes/payment'));
