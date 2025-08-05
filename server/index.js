@@ -67,7 +67,6 @@ mongoose.connect(MONGODB_URI, {
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 const goalRoutes = require('./routes/setGoal');
-const checkinRoutes = require('./routes/checkin');
 const priceRoutes = require('./routes/price');
 
 app.use(cors());
@@ -78,7 +77,6 @@ app.use('/uploads', express.static('uploads'));
 
 // 使用路由
 app.use('/api/goals', goalRoutes);
-app.use('/api/checkin', checkinRoutes);
 app.use('/api/price', priceRoutes);
 app.use('/api/user-progress', require('./routes/userProgress'));
 app.use('/api/bank-info', require('./routes/bankInfo'));

@@ -33,7 +33,7 @@ const checkinSchema = new mongoose.Schema({
 checkinSchema.index({ userId: 1, goalId: 1 }, { unique: true });
 
 // 实例方法
-checkinSchema.methods.addCheckin = function(dayNumber, imageUrl, dailyAmount) {
+checkinSchema.methods.addCheckin = function (dayNumber, imageUrl, dailyAmount) {
   this.checkins.set(dayNumber, {
     imageUrl,
     uploadTime: new Date(),
@@ -42,24 +42,24 @@ checkinSchema.methods.addCheckin = function(dayNumber, imageUrl, dailyAmount) {
   return this.save();
 };
 
-checkinSchema.methods.getCheckin = function(dayNumber) {
+checkinSchema.methods.getCheckin = function (dayNumber) {
   return this.checkins.get(dayNumber);
 };
 
-checkinSchema.methods.hasCheckin = function(dayNumber) {
+checkinSchema.methods.hasCheckin = function (dayNumber) {
   return this.checkins.has(dayNumber);
 };
 
-checkinSchema.methods.getTotalCheckins = function() {
+checkinSchema.methods.getTotalCheckins = function () {
   return this.checkins.size;
 };
 
 // 静态方法
-checkinSchema.statics.findByUserAndGoal = function(userId, goalId) {
+checkinSchema.statics.findByUserAndGoal = function (userId, goalId) {
   return this.findOne({ userId, goalId });
 };
 
-checkinSchema.statics.findOrCreateByUserAndGoal = async function(userId, goalId) {
+checkinSchema.statics.findOrCreateByUserAndGoal = async function (userId, goalId) {
   let checkin = await this.findOne({ userId, goalId });
   if (!checkin) {
     checkin = new this({
