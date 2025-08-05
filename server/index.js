@@ -100,7 +100,7 @@ app.use('/api/invite', require('./routes/invite'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/user', require('./routes/userProfile'));
 app.use('/api/upload', require('./routes/uploadAvatar'));
-app.use('/api/deposit-setup', require('./routes/depositSetup'));
+
 
 // 全局错误处理中间件 - 必须在所有路由之后
 // const errorHandler = require('./middleware/errorHandler');
