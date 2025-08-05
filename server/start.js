@@ -30,20 +30,14 @@ mongoose.connect(MONGODB_URI)
     
     // 数据库连接成功后加载路由
     app.use('/api/goals', require('./routes/setGoal'));
-    app.use('/api/checkin', require('./routes/checkin'));
-    app.use('/api/price', require('./routes/price'));
     app.use('/api/user-progress', require('./routes/userProgress'));
     app.use('/api/bank-info', require('./routes/bankInfo'));
     app.use('/api/mock-payment', require('./routes/mockPayment'));
     app.use('/api/payment', require('./routes/payment'));
-    app.use('/api/subscription', require('./routes/subscription'));
-    app.use('/api/deposit', require('./routes/deposit'));
-    app.use('/api/refund', require('./routes/refund'));
     app.use('/api/invite', require('./routes/invite'));
     app.use('/api/auth', require('./routes/auth'));
     app.use('/api/user', require('./routes/userProfile'));
     app.use('/api/upload', require('./routes/uploadAvatar'));
-    app.use('/api/deposit-setup', require('./routes/depositSetup'));
     
     // 静态文件
     app.use('/uploads', express.static('uploads'));
