@@ -12,12 +12,16 @@ const JWT_SECRET = 'your-secret'; // 实际部署时用 .env
 // auth.js
 router.post('/register', async (req, res) => {
   const { username, password, email } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
+    // 生成salt
+    const salt = require('crypto').randomBytes(16).toString('hex');
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await User.create({
       username,
       password: hashedPassword,
+      salt: salt,
       email: email || ''
     });
 
@@ -58,6 +62,27 @@ router.post('/login', async (req, res) => {
       avatar: user.avatar || null
     }
   });
+});
+
+// 获取用户salt
+router.get('/get-salt/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // 返回用户的salt（这里假设salt存储在用户模型中）
+    // 如果没有salt字段，可以生成一个
+    const salt = user.salt || 'default-salt';
+
+    res.json({ salt });
+  } catch (error) {
+    console.error('Error getting user salt:', error);
+    res.status(500).json({ error: 'Failed to get user salt' });
+  }
 });
 
 // 搜索用户接口
