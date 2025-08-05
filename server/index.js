@@ -72,6 +72,16 @@ const priceRoutes = require('./routes/price');
 app.use(cors());
 app.use(express.json());
 
+// 健康检查端点
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));
 
